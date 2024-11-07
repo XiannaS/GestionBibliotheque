@@ -4,147 +4,189 @@ import controllers.LivreController;
 import model.Livre;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
 import java.time.LocalDate;
 import java.util.List;
 
 public class LivreView extends JFrame {
     private static final long serialVersionUID = 1L;
     private LivreController livreController;
-    private JTextField titreField, auteurField, anneeField, searchField;
     private JTextArea livresArea;
-    private JComboBox<String> genreComboBox; // Pour le genre
-    private JCheckBox disponibleCheckBox; // Pour la disponibilité
-    private JComboBox<Integer> yearComboBox; // Pour filtrer par année
-    private JList<String> resultsList; // Pour afficher les résultats de recherche
-    private DefaultListModel<String> listModel; // Modèle pour la JList
+    private JButton addButton;
+
+    // Chemin absolu du dossier ressources
+    private static final String RESOURCE_PATH = "C:/Eclipse/GestionBibliothèque/src/ressources/";
 
     public LivreView() {
         livreController = new LivreController();
         setTitle("Gestion de Bibliothèque");
-        setSize(700, 600);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(new Color(245, 245, 245));
 
-        // Panneau pour les champs de saisie
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout(8, 2)); // Augmenter le nombre de lignes pour inclure la case à cocher
+        // Bouton d'ajout de livre avec icône redimensionnée et couleur personnalisée
+        addButton = new JButton("Ajouter Livre");
+        addButton.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "add-icon.png"), 20, 20));
+        addButton.setFocusPainted(false);
+        addButton.setBackground(Color.decode("#004754"));
+        addButton.setForeground(Color.WHITE);
+        addButton.addActionListener(e -> openAddBookDialog());
 
-        inputPanel.add(new JLabel("Titre:"));
-        titreField = new JTextField();
-        inputPanel.add(titreField);
-
-        inputPanel.add(new JLabel("Auteur:"));
-        auteurField = new JTextField();
-        inputPanel.add(auteurField);
-
-        inputPanel.add(new JLabel("Genre:"));
-        String[] genres = {"Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Biographie", "Histoire"};
-        genreComboBox = new JComboBox<>(genres); // Initialisation de JComboBox
-        inputPanel.add(genreComboBox);
-
-        inputPanel.add(new JLabel("Année de Publication:"));
-        anneeField = new JTextField();
-        inputPanel.add(anneeField);
-
-        inputPanel.add(new JLabel("Disponible:"));
-        disponibleCheckBox = new JCheckBox(); // Initialisation de JCheckBox
-        inputPanel.add(disponibleCheckBox);
-
-        JButton ajouterButton = new JButton("Ajouter Livre");
-        ajouterButton.addActionListener(e -> ajouterLivre());
-        inputPanel.add(ajouterButton);
-
-        // Champ de recherche
-        inputPanel.add(new JLabel("Recherche:"));
-        searchField = new JTextField();
-        inputPanel.add(searchField);
-
-        // ComboBox pour filtrer par année
-        yearComboBox = new JComboBox<>(getAvailableYears());
-        inputPanel.add(new JLabel("Filtrer par année:"));
-        inputPanel.add(yearComboBox);
-
-        add(inputPanel, BorderLayout.NORTH);
-
-        // Initialisation et ajout de la zone de texte pour afficher tous les livres
+        // Zone d'affichage des livres
         livresArea = new JTextArea();
-        livresArea.setEditable(false); // Rendre non-éditable
-        JScrollPane livresScrollPane = new JScrollPane(livresArea);
-        add(livresScrollPane, BorderLayout.CENTER);
+        livresArea.setEditable(false);
+        livresArea.setBorder(new EmptyBorder(10, 10, 10, 10));
+        add(new JScrollPane(livresArea), BorderLayout.CENTER);
 
-        // Liste pour afficher les résultats de recherche
-        listModel = new DefaultListModel<>();
-        resultsList = new JList<>(listModel);
-        add(new JScrollPane(resultsList), BorderLayout.SOUTH); // Utiliser SOUTH pour séparer la liste des résultats et l'affichage complet
+        // Panel en bas pour les boutons et l'image de fond
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBackground(new Color(245, 245, 245));
 
-        // Écouteur pour le champ de recherche
-        searchField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                updateSearchResults();
-            }
-        });
+        // Ajouter l'image de fond redimensionnée
+        JLabel imageLabel = new JLabel(resizeIcon(loadIcon(RESOURCE_PATH + "livreform.png"), 600, 400)); // Ajustez la taille selon vos préférences
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);  // Positionnement au centre
+        bottomPanel.add(imageLabel, BorderLayout.CENTER);
 
-        // Charger les livres au démarrage
+        // Ajouter le bouton en bas à gauche
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(245, 245, 245));
+        buttonPanel.add(addButton);
+        bottomPanel.add(buttonPanel, BorderLayout.WEST);
+
+        add(bottomPanel, BorderLayout.SOUTH);
+
         chargerLivres();
     }
 
-    private Integer[] getAvailableYears() {
-        // Remplir avec les années disponibles (exemple)
-        return new Integer[]{2023, 2022, 2021, 2020, 2019}; // Remplacez par vos années réelles
+    private void openAddBookDialog() {
+        JDialog addDialog = new JDialog(this, "Ajouter un Livre", true);
+        addDialog.setSize(400, 500);
+        addDialog.setLocationRelativeTo(this);
+        addDialog.setLayout(new GridBagLayout());
+        addDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        addDialog.setResizable(false);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Champs du formulaire avec icônes redimensionnées
+        JLabel titleLabel = new JLabel("Titre:");
+        titleLabel.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "title-icon.png"), 20, 20));
+        JTextField titreField = new JTextField();
+
+        JLabel auteurLabel = new JLabel("Auteur:");
+        auteurLabel.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "author-icon.png"), 20, 20));
+        JTextField auteurField = new JTextField();
+
+        JLabel genreLabel = new JLabel("Genre:");
+        genreLabel.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "genre-icon.png"), 20, 20));
+        JComboBox<String> genreComboBox = new JComboBox<>(new String[]{"Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Biographie", "Histoire"});
+
+        JLabel anneeLabel = new JLabel("Année:");
+        anneeLabel.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "year-icon.png"), 20, 20));
+        JTextField anneeField = new JTextField();
+
+        JLabel disponibleLabel = new JLabel("Disponible:");
+        JCheckBox disponibleCheckBox = new JCheckBox();
+
+        // Bouton Enregistrer avec couleur personnalisée
+        JButton saveButton = new JButton("Enregistrer");
+        saveButton.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "save-icon.png"), 20, 20));
+        saveButton.setBackground(Color.decode("#004754"));
+        saveButton.setForeground(Color.WHITE);
+
+        saveButton.addActionListener(e -> {
+            if (titreField.getText().trim().isEmpty() || auteurField.getText().trim().isEmpty() || anneeField.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Tous les champs sont obligatoires", "Erreur", JOptionPane.ERROR_MESSAGE);
+            } else {
+                ajouterLivre(titreField.getText(), auteurField.getText(), (String) genreComboBox.getSelectedItem(), anneeField.getText(), disponibleCheckBox.isSelected());
+                addDialog.dispose();
+            }
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        addDialog.add(titleLabel, gbc);
+        gbc.gridx = 1;
+        addDialog.add(titreField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        addDialog.add(auteurLabel, gbc);
+        gbc.gridx = 1;
+        addDialog.add(auteurField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        addDialog.add(genreLabel, gbc);
+        gbc.gridx = 1;
+        addDialog.add(genreComboBox, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        addDialog.add(anneeLabel, gbc);
+        gbc.gridx = 1;
+        addDialog.add(anneeField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        addDialog.add(disponibleLabel, gbc);
+        gbc.gridx = 1;
+        addDialog.add(disponibleCheckBox, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy++;
+        addDialog.add(saveButton, gbc);
+
+        // Ajouter l'image en bas du formulaire
+        JLabel imageLabel = new JLabel(resizeIcon(loadIcon(RESOURCE_PATH + "livreform.png"), 300, 100)); // Ajustez la taille selon vos préférences
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.gridwidth = 2; // Pour que l'image prenne toute la largeur
+        gbc.anchor = GridBagConstraints.PAGE_END;
+        addDialog.add(imageLabel, gbc);
+
+        addDialog.setVisible(true);
     }
 
-    private void ajouterLivre() {
-        String titre = titreField.getText();
-        String auteur = auteurField.getText();
-        String genre = (String) genreComboBox.getSelectedItem();
-        int anneePublication;
 
+    private void ajouterLivre(String titre, String auteur, String genre, String annee, boolean disponible) {
+        int anneePublication;
         try {
-            anneePublication = Integer.parseInt(anneeField.getText());
-            if (anneePublication < 1900 || anneePublication > LocalDate.now().getYear()) {
-                throw new IllegalArgumentException("L'année doit être entre 1900 et " + LocalDate.now().getYear());
+            anneePublication = Integer.parseInt(annee);
+            int currentYear = LocalDate.now().getYear();
+            if (anneePublication < 1900 || anneePublication > currentYear) {
+                JOptionPane.showMessageDialog(this, "L'année doit être entre 1900 et " + currentYear, "Erreur", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-        } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Année invalide. Veuillez entrer un nombre.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        boolean disponible = disponibleCheckBox.isSelected();
         Livre livre = new Livre(titre, auteur, genre, anneePublication, disponible);
         livreController.ajouterLivre(livre);
-        chargerLivres(); // Recharger la liste des livres
-    }
-
-    private void updateSearchResults() {
-        String searchTerm = searchField.getText().toLowerCase();
-        Integer selectedYear = (Integer) yearComboBox.getSelectedItem();
-        listModel.clear(); // Réinitialiser la liste des résultats
-
-        List<Livre> livres = livreController.lireLivres();
-        for (Livre livre : livres) {
-            boolean matches = livre.getTitre().toLowerCase().contains(searchTerm) ||
-                    livre.getAuteur().toLowerCase().contains(searchTerm) ||
-                    livre.getGenre().toLowerCase().contains(searchTerm);
-
-            if (selectedYear != null) {
-                matches = matches && (livre.getAnneePublication() == selectedYear);
-            }
-
-            if (matches) {
-                listModel.addElement(livre.toString()); // Ajouter le livre à la liste des résultats
-            }
-        }
+        chargerLivres();
     }
 
     private void chargerLivres() {
         List<Livre> livres = livreController.lireLivres();
-        livresArea.setText(""); // Réinitialiser la zone de texte
+        livresArea.setText("");
         for (Livre livre : livres) {
             livresArea.append(livre.toString() + "\n");
         }
+    }
+
+    private ImageIcon loadIcon(String path) {
+        return new ImageIcon(path);
+    }
+
+    private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
+        Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(img);
     }
 }

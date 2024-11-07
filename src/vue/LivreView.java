@@ -6,7 +6,6 @@ import model.Livre;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -45,11 +44,7 @@ public class LivreView extends JFrame {
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(new Color(245, 245, 245));
 
-        // Ajouter l'image de fond redimensionnée
-        JLabel imageLabel = new JLabel(resizeIcon(loadIcon(RESOURCE_PATH + "livreform.png"), 600, 400)); // Ajustez la taille selon vos préférences
-        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);  // Positionnement au centre
-        bottomPanel.add(imageLabel, BorderLayout.CENTER);
-
+  
         // Ajouter le bouton en bas à gauche
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(new Color(245, 245, 245));

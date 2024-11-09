@@ -15,14 +15,15 @@ public class LivreController {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split(",");
-                if (fields.length == 6) {
+                if (fields.length == 7) { // 7 champs avec imageUrl
                     String id = fields[0];
                     String titre = fields[1];
                     String auteur = fields[2];
                     String genre = fields[3];
                     int anneePublication = Integer.parseInt(fields[4]);
                     boolean disponible = Boolean.parseBoolean(fields[5]);
-                    livres.add(new Livre(id, titre, auteur, genre, anneePublication, disponible));
+                    String imageUrl = fields[6];
+                    livres.add(new Livre(id, titre, auteur, genre, anneePublication, disponible, imageUrl));
                 }
             }
         } catch (IOException e) {
@@ -31,8 +32,8 @@ public class LivreController {
         return livres;
     }
 
+
     public void ajouterLivre(Livre livre) {
-    	
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(CSV_FILE, true))) {
             bw.write(livre.toString());
             bw.newLine();
@@ -40,6 +41,7 @@ public class LivreController {
             e.printStackTrace();
         }
     }
+
 
     public void modifierLivre(Livre livreModifie) {
         List<Livre> livres = lireLivres();
@@ -56,6 +58,7 @@ public class LivreController {
             e.printStackTrace();
         }
     }
+
 
     public void supprimerLivre(String id) {
         List<Livre> livres = lireLivres();

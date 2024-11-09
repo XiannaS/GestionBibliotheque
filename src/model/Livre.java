@@ -7,27 +7,30 @@ public class Livre {
     private String genre;
     private int anneePublication;
     private boolean disponible;
-
+    private String imageUrl; 
+    
     // Constructeur
-    public Livre(String titre, String auteur, String genre, int anneePublication, boolean disponible) {
+    public Livre(String titre, String auteur, String genre, int anneePublication, boolean disponible,String imageUrl) {
         this.titre = titre;
         this.auteur = auteur;
         this.genre = genre;
         this.anneePublication = anneePublication;
         this.disponible = disponible;
+        this.setImageUrl(imageUrl); 
     }
 
     // Autres méthodes...
 
 
     // Constructeur avec ID
-    public Livre(String id, String titre, String auteur, String genre, int anneePublication, boolean disponible) {
+    public Livre(String id, String titre, String auteur, String genre, int anneePublication, boolean disponible,String imageUrl) {
         this.id = id;
         this.titre = titre;
         this.auteur = auteur;
         this.genre = genre;
         this.anneePublication = anneePublication;
         this.disponible = disponible;
+        this.setImageUrl(imageUrl); 
     }
 
     // Getters et Setters
@@ -61,6 +64,14 @@ public class Livre {
 
     @Override
     public String toString() {
-        return id + "," + titre + "," + auteur + "," + genre + "," + anneePublication + "," + disponible;
+    	  return id + "," + titre + "," + auteur + "," + genre + "," + anneePublication + "," + disponible + "," + imageUrl;
     }
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
 }

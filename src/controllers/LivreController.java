@@ -39,8 +39,18 @@ public class LivreController {
         }
     }
 
+ // Méthode pour générer un ID unique
+    private String genererId() {
+        List<Livre> livres = lireLivres();
+        // Générer un ID en fonction du nombre de livres, formaté à 4 chiffres
+        return String.format("%04d", livres.size() + 1);
+    }
+
     // Méthode pour ajouter un livre dans le fichier CSV
     public void ajouterLivre(Livre livre) {
+        // Attribuer un ID unique au livre avant de l'ajouter
+        livre.setId(genererId());
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(CSV_FILE, true))) {
             bw.write(livre.toCsvFormat());
             bw.newLine();

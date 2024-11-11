@@ -39,20 +39,40 @@ public class Livre {
         return titre;
     }
 
+    public void setTitre(String titre) {
+        this.titre = titre;
+    }
+
     public String getAuteur() {
         return auteur;
+    }
+
+    public void setAuteur(String auteur) {
+        this.auteur = auteur;
     }
 
     public String getGenre() {
         return genre;
     }
 
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
     public int getAnneePublication() {
         return anneePublication;
     }
 
+    public void setAnneePublication(int anneePublication) {
+        this.anneePublication = anneePublication;
+    }
+
     public boolean isDisponible() {
         return disponible;
+    }
+
+    public void setDisponible(boolean disponible) {
+        this.disponible = disponible;
     }
 
     public String getImageUrl() {

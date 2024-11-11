@@ -9,31 +9,24 @@ public class Livre {
     private boolean disponible;
     private String imageUrl; 
     
-    // Constructeur
-    public Livre(String titre, String auteur, String genre, int anneePublication, boolean disponible,String imageUrl) {
-        this.titre = titre;
-        this.auteur = auteur;
-        this.genre = genre;
-        this.anneePublication = anneePublication;
-        this.disponible = disponible;
-        this.setImageUrl(imageUrl); 
-    }
-
-    // Autres méthodes...
-
-
     // Constructeur avec ID
-    public Livre(String id, String titre, String auteur, String genre, int anneePublication, boolean disponible,String imageUrl) {
+    public Livre(String id, String titre, String auteur, String genre, int anneePublication, boolean disponible, String imageUrl) {
         this.id = id;
         this.titre = titre;
         this.auteur = auteur;
         this.genre = genre;
         this.anneePublication = anneePublication;
         this.disponible = disponible;
-        this.setImageUrl(imageUrl); 
+        this.imageUrl = imageUrl;
+    }
+
+    // Constructeur sans ID pour création
+    public Livre(String titre, String auteur, String genre, int anneePublication, boolean disponible, String imageUrl) {
+        this(null, titre, auteur, genre, anneePublication, disponible, imageUrl);
     }
 
     // Getters et Setters
+
     public String getId() {
         return id;
     }
@@ -62,16 +55,29 @@ public class Livre {
         return disponible;
     }
 
-    @Override
-    public String toString() {
-    	  return id + "," + titre + "," + auteur + "," + genre + "," + anneePublication + "," + disponible + "," + imageUrl;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-	public String getImageUrl() {
-		return imageUrl;
-	}
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
-	}
+    // Méthode pour formater en CSV
+    public String toCsvFormat() {
+        return String.join(",", 
+            id != null ? id : "N/A",  // Remplace par "N/A" si id est null
+            titre,
+            auteur,
+            genre,
+            String.valueOf(anneePublication),
+            String.valueOf(disponible),
+            imageUrl
+        );
+    }
+
+    @Override
+    public String toString() {
+        return toCsvFormat();
+    }
 }

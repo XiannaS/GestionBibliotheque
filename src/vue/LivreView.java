@@ -15,7 +15,7 @@ public class LivreView extends JFrame {
     private static final long serialVersionUID = 1L;
     private LivreController livreController;
     private JButton addButton;
-
+    private String imageUrl; // Variable pour stocker le chemin de l'image
     // Chemin absolu du dossier ressources
     private static final String RESOURCE_PATH = "C:/Eclipse/GestionBibliothèque/src/ressources/";
 
@@ -58,190 +58,199 @@ public class LivreView extends JFrame {
     }
 
 	 
-	private void openAddBookDialog() {
-	    JDialog addDialog = new JDialog(this, "Ajouter un Livre", true);
-	    addDialog.setSize(400, 600); // Augmentation de la taille pour inclure la couverture
-	    addDialog.setLocationRelativeTo(this);
-	    addDialog.setLayout(new GridBagLayout());
-	    addDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	    addDialog.setResizable(false);
-	
-	    GridBagConstraints gbc = new GridBagConstraints();
-	    gbc.insets = new Insets(5, 5, 5, 5);
-	    gbc.fill = GridBagConstraints.HORIZONTAL;
-	
-	    // Champs du formulaire avec icônes redimensionnées
-	    JLabel titleLabel = new JLabel("Titre:");
-	    titleLabel.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "title-icon.png"), 20, 20));
-	    JTextField titreField = new JTextField();
-	
-	    JLabel auteurLabel = new JLabel("Auteur:");
-	    auteurLabel.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "author-icon.png"), 20, 20));
-	    JTextField auteurField = new JTextField();
-	
-	    JLabel genreLabel = new JLabel("Genre:");
-	    genreLabel.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "genre-icon.png"), 20, 20));
-	    JComboBox<String> genreComboBox = new JComboBox<>(new String[]{"Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Biographie", "Histoire"});
-	
-	    JLabel anneeLabel = new JLabel("Année:");
-	    anneeLabel.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "year-icon.png"), 20, 20));
-	    JTextField anneeField = new JTextField();
-	
-	    JLabel disponibleLabel = new JLabel("Disponible:");
-	    JCheckBox disponibleCheckBox = new JCheckBox();
-	
-	    // Champ de sélection et aperçu de la couverture
-	    JLabel couvertureLabel = new JLabel("Couverture:");
-	    JButton couvertureButton = new JButton("Choisir une image");
-	    JLabel couverturePreview = new JLabel();
-	    couverturePreview.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-	    couverturePreview.setPreferredSize(new Dimension(100, 150)); // Taille de prévisualisation de la couverture
-	
-	    couvertureButton.addActionListener(e -> {
-	        JFileChooser fileChooser = new JFileChooser();
-	        int result = fileChooser.showOpenDialog(this);
-	        if (result == JFileChooser.APPROVE_OPTION) {
-	            File selectedFile = fileChooser.getSelectedFile();
-	            ImageIcon couvertureIcon = new ImageIcon(selectedFile.getPath());
-	            couverturePreview.setIcon(resizeIcon(couvertureIcon, 100, 150)); // Redimensionner l'image pour l'aperçu
-	        }
-	    });
-	
-        // Bouton Enregistrer avec couleur personnalisée
-        JButton saveButton = new JButton("Enregistrer");
-        saveButton.setIcon(resizeIcon(loadIcon(RESOURCE_PATH + "save-icon.png"), 20, 20));
-        saveButton.setBackground(Color.decode("#004754"));
-        saveButton.setForeground(Color.WHITE);
 
-        saveButton.addActionListener(e -> {
-            if (titreField.getText().trim().isEmpty() || auteurField.getText().trim().isEmpty() || anneeField.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Tous les champs sont obligatoires", "Erreur", JOptionPane.ERROR_MESSAGE);
-            } else {
-                // Créer un objet Livre
-                String titre = titreField.getText();
-                String auteur = auteurField.getText();
-                String genre = (String) genreComboBox.getSelectedItem();
-                String annee = anneeField.getText();
-                boolean disponible = disponibleCheckBox.isSelected();
-                String imageUrl = couverturePreview.getIcon() != null ? couverturePreview.getIcon().toString() : null;
 
-                // Récupérer le JScrollPane et le JPanel
-                JScrollPane booksScrollPane = (JScrollPane) getContentPane().getComponent(0);
-                JPanel booksPanel = (JPanel) booksScrollPane.getViewport().getView();
+private void openAddBookDialog() {
+    JDialog addDialog = new JDialog(this, "Ajouter un Livre", true);
+    addDialog.setSize(400, 600);
+    addDialog.setLocationRelativeTo(this);
+    addDialog.setLayout(new GridBagLayout());
+    addDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    addDialog.setResizable(false);
 
-                // Appeler la méthode ajouterLivre avec tous les paramètres requis
-                ajouterLivre(titre, auteur, genre, annee, disponible, imageUrl, booksPanel);
-                addDialog.dispose();
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(5, 5, 5, 5);
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+
+    // Champs du formulaire
+    JLabel titleLabel = new JLabel("Titre:");
+    JTextField titreField = new JTextField();
+
+    JLabel auteurLabel = new JLabel("Auteur:");
+    JTextField auteurField = new JTextField();
+
+    JLabel genreLabel = new JLabel("Genre:");
+    JComboBox<String> genreComboBox = new JComboBox<>(new String[]{"Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Biographie", "Histoire"});
+
+    JLabel anneeLabel = new JLabel("Année:");
+    JTextField anneeField = new JTextField();
+
+    JLabel disponibleLabel = new JLabel("Disponible:");
+    JCheckBox disponibleCheckBox = new JCheckBox();
+
+    // Champ de sélection et aperçu de la couverture
+    JLabel couvertureLabel = new JLabel("Couverture:");
+    JButton couvertureButton = new JButton("Choisir une image");
+    JLabel couverturePreview = new JLabel();
+    couverturePreview.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+    couverturePreview.setPreferredSize(new Dimension(100, 150)); // Taille de prévisualisation de la couverture
+
+    couvertureButton.addActionListener(e -> {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            imageUrl = selectedFile.getPath(); // Stocker le chemin de l'image
+            ImageIcon couvertureIcon = new ImageIcon(imageUrl);
+            couverturePreview.setIcon(resizeIcon(couvertureIcon, 100, 150)); // Redimensionner l'image pour l'aperçu
+        }
+    });
+
+    // Bouton Enregistrer
+    JButton saveButton = new JButton("Enregistrer");
+    saveButton.addActionListener(e -> {
+        if (titreField.getText().trim().isEmpty() || auteurField.getText().trim().isEmpty() || anneeField.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tous les champs sont obligatoires", "Erreur", JOptionPane.ERROR_MESSAGE);
+        } else {
+            // Validation de l'année
+            try {
+                int anneePublication = Integer.parseInt(anneeField.getText());
+                int currentYear = LocalDate.now().getYear();
+                if (anneePublication < 1600 || anneePublication > currentYear) {
+                    JOptionPane.showMessageDialog(this, "L'année doit être entre 1600 et " + currentYear, "Erreur", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Veuillez entrer une année valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-        });
-	
-	    // Disposition des composants
-	    gbc.gridx = 0;
-	    gbc.gridy = 0;
-	    addDialog.add(titleLabel, gbc);
-	    gbc.gridx = 1;
-	    addDialog.add(titreField, gbc);
-	
-	    gbc.gridx = 0;
-	    gbc.gridy++;
-	    addDialog.add(auteurLabel, gbc);
-	    gbc.gridx = 1;
-	    addDialog.add(auteurField, gbc);
-	
-	    gbc.gridx = 0;
-	    gbc.gridy++;
-	    addDialog.add(genreLabel, gbc);
-	    gbc.gridx = 1;
-	    addDialog.add(genreComboBox, gbc);
-	
-	    gbc.gridx = 0;
-	    gbc.gridy++;
-	    addDialog.add(anneeLabel, gbc);
-	    gbc.gridx = 1;
-	    addDialog.add(anneeField, gbc);
-	
-	    gbc.gridx = 0;
-	    gbc.gridy++;
-	    addDialog.add(disponibleLabel, gbc);
-	    gbc.gridx = 1;
-	    addDialog.add(disponibleCheckBox, gbc);
-	
-	    // Disposition des composants pour la couverture
-	    gbc.gridx = 0;
-	    gbc.gridy++;
-	    addDialog.add(couvertureLabel, gbc);
-	    gbc.gridx = 1;
-	    addDialog.add(couvertureButton, gbc);
-	
-	    gbc.gridx = 1;
-	    gbc.gridy++;
-	    addDialog.add(couverturePreview, gbc);
-	
-	    gbc.gridx = 1;
-	    gbc.gridy++;
-	    addDialog.add(saveButton, gbc);
-	
-	    addDialog.setVisible(true);
-	}
 
-	private void ajouterLivre(String titre, String auteur, String genre, String annee, boolean disponible, String imageUrl, JPanel booksPanel) {
-	    int anneePublication;
-	    try {
-	        anneePublication = Integer.parseInt(annee);
-	        int currentYear = LocalDate.now().getYear();
-	        if (anneePublication < 1900 || anneePublication > currentYear) {
-	            JOptionPane.showMessageDialog(this, "L'année doit être entre 1900 et " + currentYear, "Erreur", JOptionPane.ERROR_MESSAGE);
-	            return;
-	        }
-	    } catch (NumberFormatException e) {
-	        JOptionPane.showMessageDialog(this, "Année invalide. Veuillez entrer un nombre.", "Erreur", JOptionPane.ERROR_MESSAGE);
-	        return;
+            // Créer un objet Livre
+            String titre = titreField.getText();
+            String auteur = auteurField.getText ();
+            String genre = (String) genreComboBox.getSelectedItem();
+            String annee = anneeField.getText();
+            boolean disponible = disponibleCheckBox.isSelected();
+
+            // Appeler la méthode ajouterLivre avec tous les paramètres requis
+            ajouterLivre(titre, auteur, genre, annee, disponible, imageUrl);
+            // Effacer les champs après l'ajout
+            titreField.setText("");
+            auteurField.setText("");
+            anneeField.setText("");
+            disponibleCheckBox.setSelected(false);
+            couverturePreview.setIcon(null); // Réinitialiser l'aperçu de la couverture
+            addDialog.dispose();
+        }
+    });
+
+    // Disposition des composants
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    addDialog.add(titleLabel, gbc);
+    gbc.gridx = 1;
+    addDialog.add(titreField, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy++;
+    addDialog.add(auteurLabel, gbc);
+    gbc.gridx = 1;
+    addDialog.add(auteurField, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy++;
+    addDialog.add(genreLabel, gbc);
+    gbc.gridx = 1;
+    addDialog.add(genreComboBox, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy++;
+    addDialog.add(anneeLabel, gbc);
+    gbc.gridx = 1;
+    addDialog.add(anneeField, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy++;
+    addDialog.add(disponibleLabel, gbc);
+    gbc.gridx = 1;
+    addDialog.add(disponibleCheckBox, gbc);
+
+    // Disposition des composants pour la couverture
+    gbc.gridx = 0;
+    gbc.gridy++;
+    addDialog.add(couvertureLabel, gbc);
+    gbc.gridx = 1;
+    addDialog.add(couvertureButton, gbc);
+
+    gbc.gridx = 1;
+    gbc.gridy++;
+    addDialog.add(couverturePreview, gbc);
+
+    gbc.gridx = 1;
+    gbc.gridy++;
+    addDialog.add(saveButton, gbc);
+
+    addDialog.setVisible(true);
+}
+private void ajouterLivre(String titre, String auteur, String genre, String annee, boolean disponible, String imageUrl) {
+    int anneePublication;
+    try {
+        anneePublication = Integer.parseInt(annee);
+        int currentYear = LocalDate.now().getYear();
+        if (anneePublication < 1600 || anneePublication > currentYear) {
+            JOptionPane.showMessageDialog(this, "L'année doit être entre 1600 et " + currentYear, "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "Année invalide. Veuillez entrer un nombre.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    Livre livre = new Livre(UUID.randomUUID().toString(), titre, auteur, genre, anneePublication, disponible, imageUrl);
+    livreController.ajouterLivre(livre);
+
+    // Récupérer le JScrollPane et son JPanel
+    JScrollPane scrollPane = (JScrollPane) getContentPane().getComponent(0);
+    JPanel booksPanel = (JPanel) scrollPane.getViewport().getView(); // Obtenir le JPanel à l'intérieur du JScrollPane
+    chargerLivres(booksPanel); // Actualiser l'affichage après l'ajout
+}
+
+
+	private void chargerLivres(JPanel booksPanel) {
+	    List<Livre> livres = livreController.lireLivres();
+	    booksPanel.removeAll();
+
+	    for (Livre livre : livres) {
+	        JPanel livrePanel = new JPanel();
+	        livrePanel.setLayout(new BorderLayout());
+	        livrePanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+	        livrePanel.setBackground(new Color(255, 255, 255));
+	        livrePanel.setPreferredSize(new Dimension(200, 300));
+
+	        // Charger l'image spécifique si elle existe, sinon utiliser une image par défaut
+	        String imagePath = livre.getImageUrl() != null && !livre.getImageUrl().isEmpty()
+	            ? livre.getImageUrl()
+	            : RESOURCE_PATH + "default-book.jpeg";
+	        JLabel imageLabel = new JLabel(resizeIcon(loadIcon(imagePath), 120, 180));
+	        livrePanel.add(imageLabel, BorderLayout.CENTER);
+
+	        // Titre et auteur
+	        JPanel textPanel = new JPanel(new GridLayout(2, 1));
+	        textPanel.setBackground(new Color(255, 255, 255));
+	        JLabel titleLabel = new JLabel(livre.getTitre(), JLabel.CENTER);
+	        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+	        JLabel authorLabel = new JLabel(livre.getAuteur(), JLabel.CENTER);
+	        textPanel.add(titleLabel);
+	        textPanel.add(authorLabel);
+
+	        livrePanel.add(textPanel, BorderLayout.SOUTH);
+	        booksPanel.add(livrePanel);
 	    }
 
-	    Livre livre = new Livre(UUID.randomUUID().toString(), titre, auteur, genre, anneePublication, disponible, imageUrl);
-	    livreController.ajouterLivre(livre);
-
-	    // Récupérer le JScrollPane et le JPanel
-	    JScrollPane booksScrollPane = (JScrollPane) getContentPane().getComponent(0);
-	    JPanel panelFromScrollPane = (JPanel) booksScrollPane.getViewport().getView(); // Renommé ici
-
-	    // Mise à jour de l'affichage
-	    chargerLivres(panelFromScrollPane); // Utilisez le nouveau nom ici
+	    booksPanel.revalidate();
+	    booksPanel.repaint();
 	}
-	
-	
-    private void chargerLivres(JPanel booksPanel) {
-        List<Livre> livres = livreController.lireLivres();
-        booksPanel.removeAll(); // Vider le panneau avant de le remplir
 
-        for (Livre livre : livres) {
-            JPanel livrePanel = new JPanel();
-            livrePanel.setLayout(new BorderLayout());
-            livrePanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-            livrePanel.setBackground(new Color(255, 255, 255));
-            livrePanel.setPreferredSize(new Dimension(200, 300)); // Taille des cartes
-
-            // Image du livre
-            JLabel imageLabel = new JLabel(resizeIcon(loadIcon(RESOURCE_PATH + "default-book.jpg"), 120, 180));
-            livrePanel.add(imageLabel, BorderLayout.CENTER);
-
-            // Titre et auteur
-            JPanel textPanel = new JPanel(new GridLayout(2, 1));
-            textPanel.setBackground(new Color(255, 255, 255));
-            JLabel titleLabel = new JLabel(livre.getTitre(), JLabel.CENTER);
-            titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
-            JLabel authorLabel = new JLabel(livre.getAuteur(), JLabel.CENTER);
-            textPanel.add(titleLabel);
-            textPanel.add(authorLabel);
-
-            livrePanel.add(textPanel, BorderLayout.SOUTH);
-
-            booksPanel.add(livrePanel);
-        }
-
-        booksPanel.revalidate();
-        booksPanel.repaint();
-    }
 
     private ImageIcon loadIcon(String path) {
         return new ImageIcon(path);

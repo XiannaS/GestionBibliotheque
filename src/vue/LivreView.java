@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.io.File;
 
@@ -77,11 +78,144 @@ public class LivreView extends JFrame {
 
         chargerLivres(livreController.lireLivres(), booksPanel);
     }
+	
+	private void openAddBookDialog() {
+	    JDialog addDialog = new JDialog(this, "Ajouter un Livre", true);
+	    addDialog.setSize(400, 600);
+	    addDialog.setLocationRelativeTo(this);
+	    addDialog.setLayout(new GridBagLayout());
+	    addDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	    addDialog.setResizable(false);
+	
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.insets = new Insets(5, 5, 5, 5);
+	    gbc.fill = GridBagConstraints.HORIZONTAL;
+	
+	    // Champs du formulaire
+	    JLabel titleLabel = new JLabel("Titre:");
+	    JTextField titreField = new JTextField();
+	    
+	    JLabel auteurLabel = new JLabel("Auteur:");
+	    JTextField auteurField = new JTextField();
+	    
+	    JLabel genreLabel = new JLabel("Genre:");
+	    JComboBox<String> genreComboBox = new JComboBox<>(new String[]{"Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Biographie", "Histoire"});
+	    
+	    JLabel anneeLabel = new JLabel("Année:");
+	    JTextField anneeField = new JTextField();
+	    
+	    JLabel disponibleLabel = new JLabel("Disponible:");
+	    JCheckBox disponibleCheckBox = new JCheckBox();
+	    
+	    // Champ de sélection et aperçu de la couverture
+	    JLabel couvertureLabel = new JLabel("Couverture:");
+	    JButton couvertureButton = new JButton("Choisir une image");
+	    JLabel couverturePreview = new JLabel();
+	    couverturePreview.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+	    couverturePreview.setPreferredSize(new Dimension(100, 150)); // Taille de prévisualisation de la couverture
+	
+	    // Variable pour stocker le chemin de l'image
+	    String[] imagePath = new String[1]; // Utilisation d'un tableau pour que la variable soit modifiable dans le listener
+	    couvertureButton.addActionListener(e -> {
+	        JFileChooser fileChooser = new JFileChooser();
+	        int result = fileChooser.showOpenDialog(this);
+	        if (result == JFileChooser.APPROVE_OPTION) {
+	            File selectedFile = fileChooser.getSelectedFile();
+	            imagePath[0] = selectedFile.getPath(); // Stockage du chemin de l'image
+	            ImageIcon couvertureIcon = new ImageIcon(imagePath[0]);
+	            couverturePreview.setIcon(resizeIcon(couvertureIcon, 100, 150)); // Redimensionner l'image pour l'aperçu
+	        }
+	    });
+	
+	    // Bouton Enregistrer
+	    JButton saveButton = new JButton("Enregistrer");
+	    saveButton.addActionListener(e -> {
+	        if (titreField.getText().trim().isEmpty() || auteurField.getText().trim().isEmpty() || anneeField.getText().trim().isEmpty()) {
+	            JOptionPane.showMessageDialog(this, "Tous les champs sont obligatoires", "Erreur", JOptionPane.ERROR_MESSAGE);
+	        } else {
+	            // Créer un objet Livre
+	            String titre = titreField.getText();
+	            String auteur = auteurField.getText();
+	            String genre = (String) genreComboBox.getSelectedItem();
+	            String annee = anneeField.getText();
+	            boolean disponible = disponibleCheckBox.isSelected();
+	            String imageUrl = imagePath[0]; // Utilisation du chemin de l'image
+	
+	            // Appeler la méthode ajouterLivre avec tous les paramètres requis
+	            ajouterLivre(titre, auteur, genre, annee, disponible, imageUrl);
+	            chargerLivres(livreController.lireLivres(), (JPanel) ((JScrollPane) getContentPane().getComponent(0)).getViewport().getView());
+	            addDialog.dispose();
+	        }
+	    });
+	
+	    // Disposition des composants
+	    gbc.gridx = 0;
+	    gbc.gridy = 0;
+	    addDialog.add(titleLabel, gbc);
+	    gbc.gridx = 1;
+	    addDialog.add(titreField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy++;
+	    addDialog.add(auteurLabel, gbc);
+	    gbc.gridx = 1;
+	    addDialog.add(auteurField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy++;
+	    addDialog.add(genreLabel, gbc);
+	    gbc.gridx = 1;
+	    addDialog.add(genreComboBox, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy++;
+	    addDialog.add(anneeLabel, gbc);
+	    gbc.gridx = 1;
+	    addDialog.add(anneeField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy++;
+	    addDialog.add(disponibleLabel, gbc);
+	    gbc.gridx = 1;
+	    addDialog.add(disponibleCheckBox, gbc);
+	
+	    // Disposition des composants pour la couverture
+	    gbc.gridx = 0;
+	    gbc.gridy++;
+	    addDialog.add(couvertureLabel, gbc);
+	    gbc.gridx = 1;
+	    addDialog.add(couvertureButton, gbc);
+	
+	    gbc.gridx = 1;
+	    gbc.gridy++;
+	    addDialog.add(couverturePreview, gbc);
+	
+	    gbc.gridx = 1;
+	    gbc.gridy++;
+	    addDialog.add(saveButton, gbc);
+	
+	    addDialog.setVisible(true);
+}
 
-    private void openAddBookDialog() {
-        // Code pour ouvrir le dialogue d'ajout de livre (inchangé)
-    }
+	private void ajouterLivre(String titre, String auteur, String genre, String annee, boolean disponible, String imageUrl) {
+	    int anneePublication;
+	    try {
+	        anneePublication = Integer.parseInt(annee);
+	        int currentYear = LocalDate.now().getYear();
+	        if (anneePublication < 1900 || anneePublication > currentYear) {
+	            JOptionPane.showMessageDialog(this, "L'année doit être entre 1900 et " + currentYear, "Erreur", JOptionPane.ERROR_MESSAGE);
+	            return;
+	        }
+	    } catch (NumberFormatException e) {
+	        JOptionPane.showMessageDialog(this, "Année invalide. Veuillez entrer un nombre.", "Erreur", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
+	    Livre livre = new Livre(UUID.randomUUID().toString(), titre, auteur, genre, anneePublication, disponible, imageUrl);
+	    livreController.ajouterLivre(livre);
+	}
+	
+	
     private void openEditBookDialog(Livre livre) {
         JDialog editDialog = new JDialog(this, "Modifier un Livre", true);
         editDialog.setSize(400, 600);

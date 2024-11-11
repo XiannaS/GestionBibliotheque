@@ -1,5 +1,6 @@
 package controllers;
 
+import java.util.UUID;
 import model.Livre;
 
 import java.io.*;
@@ -39,25 +40,21 @@ public class LivreController {
         }
     }
 
- // Méthode pour générer un ID unique
-    private String genererId() {
-        List<Livre> livres = lireLivres();
-        // Générer un ID en fonction du nombre de livres, formaté à 4 chiffres
-        return String.format("%04d", livres.size() + 1);
-    }
+ // Dans la méthode ajouterLivre
+ public void ajouterLivre(Livre livre) {
+     // Générer un ID unique avec UUID
+     String id = UUID.randomUUID().toString();
+     livre.setId(id);
+     System.out.println("Ajout du livre avec ID : " + id);
 
-    // Méthode pour ajouter un livre dans le fichier CSV
-    public void ajouterLivre(Livre livre) {
-        // Attribuer un ID unique au livre avant de l'ajouter
-        livre.setId(genererId());
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(CSV_FILE, true))) {
-            bw.write(livre.toCsvFormat());
-            bw.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+     try (BufferedWriter bw = new BufferedWriter(new FileWriter(CSV_FILE, true))) {
+         bw.write(livre.toCsvFormat());
+         bw.newLine();
+     } catch (IOException e) {
+         e.printStackTrace();
+     }
+ }
+    
 
     // Méthode pour modifier un livre dans le fichier CSV
     public void modifierLivre(Livre livreModifie) {

@@ -83,21 +83,22 @@ public class Livre {
         this.imageUrl = imageUrl;
     }
 
-    // Méthode pour formater en CSV
-    public String toCsvFormat() {
-        return String.join(",", 
-            id != null ? id : "N/A",  // Remplace par "N/A" si id est null
-            titre,
-            auteur,
-            genre,
-            String.valueOf(anneePublication),
-            String.valueOf(disponible),
-            imageUrl
-        );
+        // Méthode pour formater en CSV
+        public String toCsvFormat() {
+            return String.join(",", 
+                id != null ? id : "N/A",  // Remplace par "N/A" si id est null
+                titre != null ? titre : "N/A",  // Remplace par "N/A" si titre est null
+                auteur != null ? auteur : "N/A",  // Remplace par "N/A" si auteur est null
+                genre != null ? genre : "N/A",  // Remplace par "N/A" si genre est null
+                String.valueOf(anneePublication),
+                disponible ? "Yes" : "No",  // Remplace true/false par Yes/No
+                imageUrl != null ? imageUrl : "N/A"  // Remplace par "N/A" si imageUrl est null
+            );
+        }
+
+        @Override
+        public String toString() {
+            return toCsvFormat();
+        }
     }
 
-    @Override
-    public String toString() {
-        return toCsvFormat();
-    }
-}

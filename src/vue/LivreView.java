@@ -4,11 +4,11 @@ import controllers.LivreController;
 import model.Livre;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.io.File;
 
 public class LivreView extends JFrame {
@@ -18,7 +18,12 @@ public class LivreView extends JFrame {
     private String imageUrl; // Variable pour stocker le chemin de l'image
     // Chemin absolu du dossier ressources
     private static final String RESOURCE_PATH = "C:/Eclipse/GestionBibliothèque/src/ressources/";
-
+    
+    // Déclaration des variables pour la recherche et le filtrage
+    private JTextField searchField;
+    private JCheckBox availableCheckBox;
+    private JCheckBox borrowedCheckBox;
+    
     public LivreView() {
         livreController = new LivreController();
         setTitle("Gestion de Bibliothèque");
@@ -52,9 +57,30 @@ public class LivreView extends JFrame {
         buttonPanel.add(addButton);
         bottomPanel.add(buttonPanel, BorderLayout.WEST);
 
+        // Panel pour la recherche et le filtrage
+        JPanel searchPanel = new JPanel();
+        searchPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.setBackground(new Color(245, 245, 245));
+
+        searchField = new JTextField(20);
+        JButton searchButton = new JButton("Rechercher");
+        availableCheckBox = new JCheckBox("Disponibles");
+        borrowedCheckBox = new JCheckBox("Empruntés");
+
+        searchButton.addActionListener(e -> filterBooks());
+
+        searchPanel.add(new JLabel("Recherche:"));
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
+        searchPanel.add(availableCheckBox);
+        searchPanel.add(borrowedCheckBox);
+
+        add(searchPanel, BorderLayout.NORTH); // Ajoutez le panel de recherche en haut
+
+        
         add(bottomPanel, BorderLayout.SOUTH);
 
-        chargerLivres(booksPanel); // Charger les livres après l'initialisation
+        chargerLivres(livreController.lireLivres(), booksPanel); // Charger les livres après l'initialisation
     }
 
 	 
@@ -212,29 +238,26 @@ private void ajouterLivre(String titre, String auteur, String genre, String anne
     // Récupérer le JScrollPane et son JPanel
     JScrollPane scrollPane = (JScrollPane) getContentPane().getComponent(0);
     JPanel booksPanel = (JPanel) scrollPane.getViewport().getView(); // Obtenir le JPanel à l'intérieur du JScrollPane
-    chargerLivres(booksPanel); // Actualiser l'affichage après l'ajout
+    chargerLivres(livreController.lireLivres(), booksPanel); // Passer la liste des livres
 }
 
 
-	private void chargerLivres(JPanel booksPanel) {
-	    List<Livre> livres = livreController.lireLivres();
+	private void chargerLivres(List<Livre> livres, JPanel booksPanel) {
 	    booksPanel.removeAll();
-
-	    for (Livre livre : livres) {
+	
+	    livres.stream().forEach(livre -> {
 	        JPanel livrePanel = new JPanel();
 	        livrePanel.setLayout(new BorderLayout());
 	        livrePanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 	        livrePanel.setBackground(new Color(255, 255, 255));
 	        livrePanel.setPreferredSize(new Dimension(200, 300));
-
-	        // Charger l'image spécifique si elle existe, sinon utiliser une image par défaut
+	
 	        String imagePath = livre.getImageUrl() != null && !livre.getImageUrl().isEmpty()
 	            ? livre.getImageUrl()
 	            : RESOURCE_PATH + "default-book.jpeg";
 	        JLabel imageLabel = new JLabel(resizeIcon(loadIcon(imagePath), 120, 180));
 	        livrePanel.add(imageLabel, BorderLayout.CENTER);
-
-	        // Titre et auteur
+	
 	        JPanel textPanel = new JPanel(new GridLayout(2, 1));
 	        textPanel.setBackground(new Color(255, 255, 255));
 	        JLabel titleLabel = new JLabel(livre.getTitre(), JLabel.CENTER);
@@ -242,15 +265,15 @@ private void ajouterLivre(String titre, String auteur, String genre, String anne
 	        JLabel authorLabel = new JLabel(livre.getAuteur(), JLabel.CENTER);
 	        textPanel.add(titleLabel);
 	        textPanel.add(authorLabel);
-
+	
 	        livrePanel.add(textPanel, BorderLayout.SOUTH);
 	        booksPanel.add(livrePanel);
-	    }
-
+	    });
+	
 	    booksPanel.revalidate();
 	    booksPanel.repaint();
 	}
-
+	
 
     private ImageIcon loadIcon(String path) {
         return new ImageIcon(path);
@@ -259,5 +282,31 @@ private void ajouterLivre(String titre, String auteur, String genre, String anne
     private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
         Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
         return new ImageIcon(img);
+    }
+    
+    private void filterBooks() {
+        String searchText = searchField.getText().toLowerCase();
+        boolean showAvailable = availableCheckBox.isSelected();
+        boolean showBorrowed = borrowedCheckBox.isSelected();
+
+        List<Livre> livres = livreController.lireLivres();
+
+        List<Livre> filteredLivres = livres.stream()
+            .filter(livre -> {
+                boolean matchesSearch = livre.getTitre().toLowerCase().contains(searchText) ||
+                                        livre.getAuteur().toLowerCase().contains(searchText) ||
+                                        livre.getGenre().toLowerCase().contains(searchText);
+
+                boolean matchesAvailability = (showAvailable && livre.isDisponible()) ||
+                                              (showBorrowed && !livre.isDisponible());
+
+                // Utilisez matchesAvailability dans la condition de filtrage
+                return matchesSearch && (matchesAvailability || (!showAvailable && !showBorrowed));
+            })
+            .collect(Collectors.toList());
+
+        // Mettre à jour l'affichage avec les livres filtrés
+        JPanel booksPanel = (JPanel) ((JScrollPane) getContentPane().getComponent(0)).getViewport().getView();
+        chargerLivres(filteredLivres, booksPanel); // Passer la liste filtrée
     }
 }
